@@ -1,0 +1,28 @@
+# directories
+directories:
+  # log file directories
+  logs:
+    - test-logs
+
+# files
+files:
+  # log file patterns
+  patterns:
+    - 'chia*.log'
+
+# logging
+logging:
+  # levels are: error (always printed), warn (-v), info (-vv), debug (-vvv)
+  level: debug
+
+# media
+media:
+  hdd:
+    - /media/dest001
+    - /media/dest002
+  ssd:
+    - /media/temp
+    - /media/temp001
+    - /media/temp002
+  usb:
+    - /media/dest
