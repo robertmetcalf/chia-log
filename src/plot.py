@@ -23,10 +23,25 @@ class Plot:
 		self.phase_4    = PlotPhase4(logger)
 		self.totals     = PlotTotals(logger)
 
-	def extract (self, data:str) -> None:
-		self.parameters.extract(data)
-		self.phase_1.extract(data)
-		self.phase_2.extract(data)
-		self.phase_3.extract(data)
-		self.phase_4.extract(data)
-		self.totals.extract(data)
+	def extract (self, data:str) -> bool:
+		'''Extract a plot. Return True if there was an error, otherwise False.'''
+
+		if self.parameters.extract(data):
+			return True
+
+		if self.phase_1.extract(data):
+			return True
+
+		if self.phase_2.extract(data):
+			return True
+
+		if self.phase_3.extract(data):
+			return True
+
+		if self.phase_4.extract(data):
+			return True
+
+		if self.totals.extract(data):
+			return True
+
+		return False

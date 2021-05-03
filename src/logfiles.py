@@ -28,8 +28,11 @@ class LogFiles:
 		return self._plots
 
 	def extract (self, log_file_path:Path) -> None:
+		'''Extract one or more plots from a log file.'''
+
 		outer_begin = r'Starting plotting progress (.+?)'
 		outer_end   = r'Renamed final file'
+		pattern = outer_begin + outer_end
 
 		if log_file_path in self._files:
 			return
@@ -38,12 +41,12 @@ class LogFiles:
 			data = f.read()
 			data_replace = data.replace('\n', ' ')
 
-			outer = re.findall(outer_begin + outer_end, data_replace)
+			outer = re.findall(pattern, data_replace)
 			self._config.logger.debug(f'number of  plots {len(outer)}')
 			for results in outer:
 				self._config.logger.debug(f'results len {len(results)}')
 				plot = Plot(self._config)
-				plot.extract(results)
-				self._plots.append(plot)
+				if not plot.extract(results):
+					self._plots.append(plot)
 
 			self._files.append(log_file_path)

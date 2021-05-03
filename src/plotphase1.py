@@ -25,26 +25,29 @@ class PlotPhase1:
 
 		self.table_time:List[Phase1] = []
 
-	def extract (self, data:str) -> None:
-		'''Extract the time for phase 1'''
+	def extract (self, data:str) -> bool:
+		'''Extract the time for phase 1. Return True if there was an error, otherwise False.'''
 
 		log_prefix = 'PlotPhase1'
 
 		outer_begin = r'Starting phase 1(.+)'
 		outer_end   = r'Time for phase 1 = (\d+.\d+) seconds'
+		pattern_outer = outer_begin + outer_end
+
 		inner_begin = r'(.+?)Computing table (\d)(.+?)'
 		inner_end   = r'time: (\d+.\d+) seconds'
+		pattern_inner = inner_begin + inner_end
 
-		outer = re.search(outer_begin + outer_end, data)
+		outer = re.search(pattern_outer, data)
 		if not outer:
 			self._logger.error(f'{log_prefix} failed to extract outer data')
-			return
+			return True
 
 		have:int = len(outer.groups())
 		need:int = 2
 		if have != need:
 			self._logger.error(f'{log_prefix} failed to match outer data, need {need} groups, have {have} groups')
-			return
+			return True
 
 		body = outer.group(1)
 
@@ -52,12 +55,12 @@ class PlotPhase1:
 		self.total_time = float(outer.group(2))
 
 		need = 4
-		inner = re.findall(inner_begin + inner_end, body)
+		inner = re.findall(pattern_inner, body)
 		for result in inner:
 			have = len(result)
 			if have != need:
 				self._logger.error(f'{log_prefix} failed to match inner data, need {need} groups, have {have} groups')
-				continue
+				return True
 
 			table = int(result[1])
 			seconds = float(result[3])
@@ -66,3 +69,5 @@ class PlotPhase1:
 			self._logger.debug(f'{log_prefix} table {table} seconds {seconds}')
 
 		self._logger.debug(f'{log_prefix} total seconds {self.total_time}')
+
+		return False

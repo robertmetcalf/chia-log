@@ -23,10 +23,13 @@ class PlotTotals:
 		self.copy_time:float  = 0.0	# Copy time = 371.657 seconds. CPU (21.260%) Sun Apr 25 20:50:30 2021
 		self.end_time:Optional[datetime] = None
 
-	def extract (self, data:str) -> None:
+	def extract (self, data:str) -> bool:
 		'''
 		Extract the totals at the end of the file (working space, final file
-		size, total time, and copy time). Data looks like:
+		size, total time, and copy time). Return True if there was an error,
+		otherwise False.
+
+		Data looks like:
 
 		Approximate working space used (without final file): 269.308 GiB
 		Final File size: 101.336 GiB
@@ -43,18 +46,18 @@ class PlotTotals:
 		line_2 = r'Final File size: (\d+.\d+) GiB(.*)'
 		line_3 = r'Total time = (\d+.\d+) seconds(.*)'
 		line_4 = r'Copy time = (\d+.\d+) seconds(.*)'
-		expression = line_1 + line_2 + line_3 + line_4
+		pattern = line_1 + line_2 + line_3 + line_4
 
-		results = re.search(expression, data)
+		results = re.search(pattern, data)
 		if not results:
 			self._logger.error(f'{log_prefix} failed to extract outer data')
-			return
+			return True
 
 		have:int = len(results.groups())
 		need:int = 8
 		if have != need:
 			self._logger.error(f'{log_prefix} failed to match data, need {need} groups, have {have} groups')
-			return
+			return True
 
 		self.working_gb = float(results.group(1))
 		self.file_gb    = float(results.group(3))
@@ -67,3 +70,5 @@ class PlotTotals:
 		self._logger.debug(f'{log_prefix} total seconds {self.total_time}')
 		self._logger.debug(f'{log_prefix} copy seconds {self.copy_time}')
 		self._logger.debug(f'{log_prefix} end time {self.end_time}')
+
+		return False

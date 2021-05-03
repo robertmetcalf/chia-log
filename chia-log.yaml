@@ -16,13 +16,27 @@ logging:
   level: debug
 
 # media
-media:
-  hdd:
-    - /media/dest001
-    - /media/dest002
-  ssd:
-    - /media/temp
-    - /media/temp001
-    - /media/temp002
-  usb:
-    - /media/dest
+systems:
+  try-01:
+    comment: dest is usb
+    media:
+      dest:
+        - /media/dest
+      temp:
+        - /media/temp
+  try-02:
+    comment: single ssd for temp
+    media:
+      dest:
+        - /media/dest001
+      temp:
+        - /media/temp
+  try-03:
+    comment: dual ssd for temp
+    media:
+      dest:
+        - /media/dest001
+        - /media/dest002
+      temp:
+        - /media/temp001
+        - /media/temp002

@@ -23,10 +23,12 @@ class PlotParameters:
 		self.threads:int     = 0		# Using 4 threads of stripe size 65536
 		self.stripe_size:int = 0		# Using 4 threads of stripe size 65536
 
-	def extract (self, data:str) -> None:
+	def extract (self, data:str) -> bool:
 		'''
 		Extract the parameters (plot size, buffer size, buckets, threads, and
-		stripe size). Data looks like:
+		stripe size). Return True if there was an error, otherwise False.
+
+		Data looks like:
 
 		into temporary dirs: /media/temp and /media/temp
 		ID: c259696a3a94a3b9302ec95d24a5763d9e1125f6ac5ff68f7aca1790501986e9
@@ -43,18 +45,18 @@ class PlotParameters:
 		line_4 = r'Buffer size is: (\d+)MiB '
 		line_5 = r'Using (\d+) buckets '
 		line_6 = r'Using (\d+) threads of stripe size (\d+)'
-		expression = line_1 + line_2 + line_3 + line_4 + line_5 + line_6
+		pattern = line_1 + line_2 + line_3 + line_4 + line_5 + line_6
 
-		results = re.search(expression, data)
+		results = re.search(pattern, data)
 		if not results:
 			self._logger.error(f'{prefix} failed to extract data')
-			return
+			return True
 
 		have:int = len(results.groups())
 		need:int = 8
 		if have != need:
 			self._logger.error(f'{prefix} failed to match data, need {need} groups, have {have} groups')
-			return
+			return True
 
 		self.temp_dir_1  = str(results.group(1))
 		self.temp_dir_2  = str(results.group(2))
@@ -66,3 +68,5 @@ class PlotParameters:
 		self.stripe_size = int(results.group(8))
 
 		self._logger.debug(f'{prefix} res {results.groups()}')
+
+		return False
