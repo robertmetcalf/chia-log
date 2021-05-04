@@ -18,6 +18,7 @@ class Plot:
 
 		logger = config.logger
 
+		# extracted from the log file
 		self.parameters = PlotParameters(logger)
 		self.phase_1    = PlotPhase1(logger)
 		self.phase_2    = PlotPhase2(logger)
@@ -25,8 +26,13 @@ class Plot:
 		self.phase_4    = PlotPhase4(logger)
 		self.totals     = PlotTotals(logger)
 
+		# determined after the log file is processed
+		self.disk:str = ''		# disk configurations for categorizing plot types
+
 	def extract (self, data:str) -> bool:
-		'''Extract a plot. Return True if there was an error, otherwise False.'''
+		'''
+		Extract a plot. Return True if there was an error, otherwise False.
+		'''
 
 		if self.parameters.extract(data):
 			return True
@@ -49,7 +55,10 @@ class Plot:
 		return False
 
 	def post_process (self) -> None:
-		# post-process each plot and add more information
+		'''
+		Post-process each plot and add more information.
+		'''
+
 		self._set_plot_type()
 
 	def _set_plot_type (self) -> None:
@@ -58,7 +67,12 @@ class Plot:
 		'''
 
 		# get the temp and dest directories for this plot
-		temp_dirs = self.parameters.temp_dirs
-		dest_dir = self.totals.dest_dir
+		dest_dir = str(self.totals.dest_dir)
+		temp_dir_1, temp_dir_2 = self.parameters.temp_dirs	# at the top of the log file
 
-		# match the directories to an entry in the config file
+		# match the dest and temp directories to a "mount" entry in the config file
+		for disk in self._config.disks:
+			if dest_dir in disk['dest']:
+				if temp_dir_1 in disk['temp'] and temp_dir_2 in disk['temp']:
+					self.disk = disk['comment']
+					break

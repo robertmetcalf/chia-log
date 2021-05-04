@@ -1,7 +1,7 @@
 # system packages
 from pathlib import Path
 from typing  import Any, Dict, List
-import pprint
+#import pprint
 
 # third party packages
 import yaml
@@ -21,12 +21,19 @@ class Config:
 		# directories section
 		self._log_directories:List[Path] = []	# a list of log directories
 
+		# disks section
+		self._disks:List[Any]= []				# various disk configurations
+
 		# files section
-		self._patterns:List[str]         = []	# log file patterns to look for
+		self._patterns:List[str] = []			# log file patterns to look for
 
 		# is the configuration valid
 		self._valid:bool = False
 		self._logger = Logger()
+
+	@property
+	def disks (self) -> List[Any]:
+		return self._disks
 
 	@property
 	def file (self) -> str:
@@ -108,6 +115,13 @@ class Config:
 			print(f'Error: in config file, no valid log directories found')
 			return False
 
+		# the "disks" section
+		if cfg and 'disks' in cfg:
+			disks:List[Any] = cfg['disks']
+
+			if disks:
+				self._disks = disks
+
 		# the "files" section
 		if cfg and 'files' in cfg:
 			files:Dict[str, Any] = cfg['files']
@@ -132,15 +146,8 @@ class Config:
 					if self._option_verbose == 0:
 						self._option_verbose = levels.index(level)
 
-		# the "plots" section
-		if cfg and 'plots' in cfg:
-			plots:List[Any] = cfg['plots']
-
-			for plot in plots:
-				pass
-
-		pp = pprint.PrettyPrinter(indent=4)
-		pp.pprint(cfg)
+		#pp = pprint.PrettyPrinter(indent=4)
+		#pp.pprint(cfg)
 
 		return True
 

@@ -48,7 +48,9 @@ class Main:
 		for plot in log_files.plots:
 			plot.post_process()
 
+		# analyze the plots
 		analyze = Analyze(self._config)
+		analyze.process(log_files.plots)
 		analyze.print()
 
 

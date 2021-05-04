@@ -1,5 +1,6 @@
 # system packages
 from datetime import datetime
+from pathlib  import Path
 from typing   import Optional
 import re
 
@@ -17,15 +18,17 @@ class PlotTotals:
 		self._logger = logger
 
 		# parameters at the end of the log file
-		self.working_gb:float = 0.0	# Approximate working space used (without final file): 269.308 GiB
-		self.file_gb:float    = 0.0	# Final File size: 101.336 GiB
-		self.total_time:float = 0.0	# Total time = 13508.459 seconds. CPU (133.870%) Sun Apr 25 20:44:18 2021
-		self.copy_time:float  = 0.0	# Copy time = 371.657 seconds. CPU (21.260%) Sun Apr 25 20:50:30 2021
+		self.working_gb:float = 0.0		# Approximate working space used (without final file): 269.308 GiB
+		self.file_gb:float    = 0.0		# Final File size: 101.336 GiB
+		self.total_time:float = 0.0		# Total time = 13508.459 seconds. CPU (133.870%) Sun Apr 25 20:44:18 2021
+		self.temp_path:str    = ''		# Copied final file from "/temp2/name.plot.2.tmp" to "/dest/name.plot.2.tmp"
+		self.dest_path:str    = ''		# Copied final file from "/temp2/name.plot.2.tmp" to "/dest/name.plot.2.tmp"
+		self.copy_time:float  = 0.0		# Copy time = 371.657 seconds. CPU (21.260%) Sun Apr 25 20:50:30 2021
 		self.end_time:Optional[datetime] = None
 
 	@property
-	def dest_dir (self) -> str:
-		return ''
+	def dest_dir (self) -> Path:
+		return Path(self.dest_path).parent
 
 	def extract (self, data:str) -> bool:
 		'''
@@ -38,10 +41,10 @@ class PlotTotals:
 		Approximate working space used (without final file): 269.308 GiB
 		Final File size: 101.336 GiB
 		Total time = 13508.459 seconds. CPU (133.870%) Sun Apr 25 20:44:18 2021
-		Copied final file from {temp.2.tmp} to {dest.2.tmp}
+		Copied final file from "/temp2/name.plot.2.tmp" to "/dest/name.plot.2.tmp"
 		Copy time = 371.657 seconds. CPU (21.260%) Sun Apr 25 20:50:30 2021
-		Removed temp2 file {temp.2.tmp}
-		Renamed final file from {dest.2.tmp} to {dest.plot}
+		Removed temp2 file "/temp/name.plot.2.tmp"? 1
+		Renamed final file from "/dest/name.plot.2.tmp" to "/dest/name.plot"
 		'''
 
 		log_prefix = 'PlotTotals'
@@ -49,8 +52,9 @@ class PlotTotals:
 		line_1 = r'Approximate working space used \(without final file\): (\d+.\d+) GiB(.*)'
 		line_2 = r'Final File size: (\d+.\d+) GiB(.*)'
 		line_3 = r'Total time = (\d+.\d+) seconds(.*)'
-		line_4 = r'Copy time = (\d+.\d+) seconds(.*)'
-		pattern = line_1 + line_2 + line_3 + line_4
+		line_4 = r'Copied final file from "(.*)" to "(.*)" '
+		line_5 = r'Copy time = (\d+.\d+) seconds(.*)'
+		pattern = line_1 + line_2 + line_3 + line_4 + line_5
 
 		results = re.search(pattern, data)
 		if not results:
@@ -58,7 +62,7 @@ class PlotTotals:
 			return True
 
 		have:int = len(results.groups())
-		need:int = 8
+		need:int = 10
 		if have != need:
 			self._logger.error(f'{log_prefix} failed to match data, need {need} groups, have {have} groups')
 			return True
@@ -66,13 +70,17 @@ class PlotTotals:
 		self.working_gb = float(results.group(1))
 		self.file_gb    = float(results.group(3))
 		self.total_time = float(results.group(5))
-		self.copy_time  = float(results.group(7))
-		self.end_time   = phase_start_time(self._logger, log_prefix, results.group(8))
+		self.temp_path  = str(results.group(7))
+		self.dest_path  = str(results.group(8))
+		self.copy_time  = float(results.group(9))
+		self.end_time   = phase_start_time(self._logger, log_prefix, results.group(10))
 
 		self._logger.debug(f'{log_prefix} working GB {self.working_gb}')
 		self._logger.debug(f'{log_prefix} file GB {self.file_gb}')
 		self._logger.debug(f'{log_prefix} total seconds {self.total_time}')
 		self._logger.debug(f'{log_prefix} copy seconds {self.copy_time}')
 		self._logger.debug(f'{log_prefix} end time {self.end_time}')
+		self._logger.debug(f'{log_prefix} temp path {self.temp_path}')
+		self._logger.debug(f'{log_prefix} dest path {self.dest_path}')
 
 		return False
