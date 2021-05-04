@@ -50,6 +50,15 @@ class Plot:
 
 	def post_process (self) -> None:
 		# post-process each plot and add more information
+		self._set_plot_type()
 
+	def _set_plot_type (self) -> None:
+		'''
+		Determine the plot type based on the "temp" and "dest" directory settings.
+		'''
+
+		# get the temp and dest directories for this plot
 		temp_dirs = self.parameters.temp_dirs
 		dest_dir = self.totals.dest_dir
+
+		# match the directories to an entry in the config file
