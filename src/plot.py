@@ -14,6 +14,8 @@ class Plot:
 	'''
 
 	def __init__ (self, config:Config):
+		self._config = config
+
 		logger = config.logger
 
 		self.parameters = PlotParameters(logger)
@@ -45,3 +47,9 @@ class Plot:
 			return True
 
 		return False
+
+	def post_process (self) -> None:
+		# post-process each plot and add more information
+
+		temp_dirs = self.parameters.temp_dirs
+		dest_dir = self.totals.dest_dir

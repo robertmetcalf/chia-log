@@ -1,42 +1,38 @@
-# directories
+# directories specify where the log files are
 directories:
   # log file directories
   logs:
     - test-logs
 
-# files
+# files are used to match patterns in the "directories" (above)
 files:
   # log file patterns
   patterns:
     - 'chia*.log'
 
-# logging
+# logging determines the default log level
 logging:
   # levels are: error (always printed), warn (-v), info (-vv), debug (-vvv)
   level: debug
 
-# media
-systems:
-  try-01:
-    comment: dest is usb
-    media:
-      dest:
-        - /media/dest
-      temp:
-        - /media/temp
-  try-02:
-    comment: single ssd for temp
-    media:
-      dest:
-        - /media/dest001
-      temp:
-        - /media/temp
-  try-03:
-    comment: dual ssd for temp
-    media:
-      dest:
-        - /media/dest001
-        - /media/dest002
-      temp:
-        - /media/temp001
-        - /media/temp002
+# plots are used to categorize plots for "like" comparisons
+plotTypes:
+  - comment: dest is usb
+    dest:
+      - /media/dest
+    temp:
+      - /media/temp
+
+  - comment: single ssd for temp
+    dest:
+      - /media/dest001
+    temp:
+      - /media/temp
+
+  - comment: dual ssd for temp
+    dest:
+      - /media/dest001
+      - /media/dest002
+    temp:
+      - /media/temp001
+      - /media/temp002

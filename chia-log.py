@@ -7,7 +7,7 @@ import argparse
 # third party packages
 
 # local packages
-#from src.analyze  import Analyze
+from src.analyze  import Analyze
 from src.config   import Config
 from src.logfiles import LogFiles
 
@@ -44,12 +44,12 @@ class Main:
 
 		print(f'Processed {len(log_files.files)} files containing {len(log_files.plots)} plots')
 
+		# post-process each plot and add more information
+		for plot in log_files.plots:
+			plot.post_process()
 
-		#print(f'Debug: analyze {analyze.log_files} files')
-
-		#analyze = Analyze()
-
-		#analyze.print(config)
+		analyze = Analyze(self._config)
+		analyze.print()
 
 
 if __name__ == '__main__':
@@ -60,7 +60,8 @@ if __name__ == '__main__':
 	parser.add_argument('-v', '--verbose', action='count', default=0, help='')
 	args = parser.parse_args()
 
-	config = Config(args.config, args.file, args.output, args.verbose)
+	config = Config()
+	config.cli_options(args.config, args.file, args.output, args.verbose)
 	if config.valid:
 		main = Main(config)
 		main.run()

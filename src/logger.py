@@ -1,5 +1,8 @@
 class Logger:
-	def __init__ (self, verbose:int):
+	def __init__ (self):
+		self._verbose:int = 0
+
+	def set_log_level (self, verbose:int) -> None:
 		self._verbose:int = verbose
 
 	def error (self, t:str) -> None:

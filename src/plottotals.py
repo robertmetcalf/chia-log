@@ -23,6 +23,10 @@ class PlotTotals:
 		self.copy_time:float  = 0.0	# Copy time = 371.657 seconds. CPU (21.260%) Sun Apr 25 20:50:30 2021
 		self.end_time:Optional[datetime] = None
 
+	@property
+	def dest_dir (self) -> str:
+		return ''
+
 	def extract (self, data:str) -> bool:
 		'''
 		Extract the totals at the end of the file (working space, final file

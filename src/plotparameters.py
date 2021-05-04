@@ -1,4 +1,5 @@
 # system packages
+from typing import Tuple
 import re
 
 # local packages
@@ -22,6 +23,10 @@ class PlotParameters:
 		self.buckets:int     = 0		# Using 128 buckets
 		self.threads:int     = 0		# Using 4 threads of stripe size 65536
 		self.stripe_size:int = 0		# Using 4 threads of stripe size 65536
+
+	@property
+	def temp_dirs (self) -> Tuple[str, str]:
+		return self.temp_dir_1, self.temp_dir_2
 
 	def extract (self, data:str) -> bool:
 		'''

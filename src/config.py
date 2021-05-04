@@ -1,6 +1,7 @@
 # system packages
 from pathlib import Path
 from typing  import Any, Dict, List
+import pprint
 
 # third party packages
 import yaml
@@ -10,23 +11,22 @@ from src.logger import Logger
 
 
 class Config:
-	def __init__ (self, option_config:str, option_file:str, option_output:str, option_verbose:int):
-		self._option_config:str  = option_config	# --config file
-		self._option_file:str    = option_file		# --file to process
-		self._option_output:str  = option_output	# --output format
-		self._option_verbose:int = option_verbose 	# --verbose logging
+	def __init__ (self):
+		# CLI options
+		self._option_config:str  = ''			# --config file
+		self._option_file:str    = ''			# --file to process
+		self._option_output:str  = ''			# --output format
+		self._option_verbose:int = 0 			# --verbose logging
 
-		self._valid:bool = False
-
+		# directories section
 		self._log_directories:List[Path] = []	# a list of log directories
+
+		# files section
 		self._patterns:List[str]         = []	# log file patterns to look for
 
-		# calidate the command-line arguments and the configuration file
-		valid_con = self._validate_config()
-		valid_cli = self._validate_cli()
-
-		self._valid = valid_con and valid_cli
-		self._logger = Logger(self._option_verbose)
+		# is the configuration valid
+		self._valid:bool = False
+		self._logger = Logger()
 
 	@property
 	def file (self) -> str:
@@ -56,11 +56,25 @@ class Config:
 	def verbose (self) -> int:
 		return self._option_verbose
 
+	def cli_options ( self, option_config:str, option_file:str, option_output:str, option_verbose:int) -> None:
+		self._option_config:str  = option_config	# --config file
+		self._option_file:str    = option_file		# --file to process
+		self._option_output:str  = option_output	# --output format
+		self._option_verbose:int = option_verbose 	# --verbose logging
+
+		# validate the configuration file and command-line arguments
+		valid_con = self._validate_config()
+		valid_cli = self._validate_cli()
+		self._valid = valid_con and valid_cli
+
+		self._logger.set_log_level(self._option_verbose)
+
 	def _validate_config (self) -> bool:
 		'''Validate the configuration file'''
 
 		cfg:Dict[str, Any] = {}
 
+		# read the configuration file
 		config_file = Path(self._option_config).resolve()
 		if not config_file.exists():
 			print(f'Error: config file does not exist ({config_file})')
@@ -75,6 +89,7 @@ class Config:
 					print(f'Error: in config file, yaml error, line {mark.line + 1}, column {mark.column + 1}')
 					return False
 
+		# the "directories" section
 		if cfg and 'directories' in cfg:
 			directories:Dict[str, Any] = cfg['directories']
 
@@ -93,6 +108,7 @@ class Config:
 			print(f'Error: in config file, no valid log directories found')
 			return False
 
+		# the "files" section
 		if cfg and 'files' in cfg:
 			files:Dict[str, Any] = cfg['files']
 
@@ -103,6 +119,7 @@ class Config:
 					for pattern in patterns:
 						self._patterns.append(pattern)
 
+		# the "logging" section
 		if cfg and 'logging' in cfg:
 			logging:Dict[str, Any] = cfg['logging']
 
@@ -114,6 +131,16 @@ class Config:
 					# set the verbose level only it it's not already set
 					if self._option_verbose == 0:
 						self._option_verbose = levels.index(level)
+
+		# the "plots" section
+		if cfg and 'plots' in cfg:
+			plots:List[Any] = cfg['plots']
+
+			for plot in plots:
+				pass
+
+		pp = pprint.PrettyPrinter(indent=4)
+		pp.pprint(cfg)
 
 		return True
 
