@@ -14,7 +14,7 @@ class PlotTotals:
 	Process plot totals at the end of the file.
 	'''
 
-	def __init__ (self, logger:Logger):
+	def __init__ (self, logger:Logger) -> None:
 		self._logger = logger
 
 		# parameters at the end of the log file

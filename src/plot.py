@@ -13,7 +13,7 @@ class Plot:
 	Process a plot.
 	'''
 
-	def __init__ (self, config:Config):
+	def __init__ (self, config:Config) -> None:
 		self._config = config
 
 		logger = config.logger
@@ -27,7 +27,7 @@ class Plot:
 		self.totals     = PlotTotals(logger)
 
 		# determined after the log file is processed
-		self.disk:str = ''		# disk configurations for categorizing plot types
+		self.name:str = ''		# plot configurations for categorizing plot types
 
 	def extract (self, data:str) -> bool:
 		'''
@@ -71,8 +71,8 @@ class Plot:
 		temp_dir_1, temp_dir_2 = self.parameters.temp_dirs	# at the top of the log file
 
 		# match the dest and temp directories to a "mount" entry in the config file
-		for disk in self._config.disks:
-			if dest_dir in disk['dest']:
-				if temp_dir_1 in disk['temp'] and temp_dir_2 in disk['temp']:
-					self.disk = disk['comment']
+		for plot_config in self._config.plot_configurations:
+			if dest_dir in plot_config['dest']:
+				if temp_dir_1 in plot_config['temp'] and temp_dir_2 in plot_config['temp']:
+					self.name = plot_config['name']
 					break

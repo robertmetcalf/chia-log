@@ -7,79 +7,93 @@ from typing     import Dict, List
 from src.config import Config
 from src.plot   import Plot
 
-
 class Analyze:
 	'''
 	Analyze the plots.
 	'''
 
-	def __init__ (self, config:Config):
+	def __init__ (self, config:Config) -> None:
 		self._config = config
 
 	def process (self, plots:List[Plot]) -> None:
-		# for each mount type
-		disks = Disks()
+		plot_configs = PlotConfigurations()
 
 		for plot in plots:
-			disk = disks.get_disk(plot.disk)
-			disk.inc_plot_count()
-			disk.append(1, plot.phase_1.total_time)
-			disk.append(2, plot.phase_2.total_time)
-			disk.append(3, plot.phase_3.total_time)
-			disk.append(4, plot.phase_4.total_time)
-			disk.append(5, plot.totals.total_time)
+			# get the disk configuration that matches this plot
+			plot_config = plot_configs.get_plot_config(plot.name)
+			plot_config.increment_plot_count(plot.parameters.threads)
+			plot_config.append(plot.parameters.threads, 1, plot.phase_1.total_time)
+			plot_config.append(plot.parameters.threads, 2, plot.phase_2.total_time)
+			plot_config.append(plot.parameters.threads, 3, plot.phase_3.total_time)
+			plot_config.append(plot.parameters.threads, 4, plot.phase_4.total_time)
+			plot_config.append(plot.parameters.threads, 5, plot.totals.total_time)
 
-		for disk in disks.disks:
-			print(f'Disk - {disk.comment} count {disk.plot_count}')
-			for phase in range(1, 6):
-				print(f'p{phase} {disk.avg(phase)}')
-
-		# find the total time, in seconds, for each phase
+		for plot_config in plot_configs.plot_configs:
+			plot_config.print()
 
 	def print (self) -> None:
-		pass
+		if self._config.is_csv:
+			pass
 
-class Disks:
+		if self._config.is_json:
+			pass
+
+		if self._config.is_markdown:
+			pass
+
+class PlotConfigurations:
 	'''
-	Manages individual disks, as found in the chia-log.yaml file.
+	Manages all plot configurations, as found in the chia-log.yaml file.
 	'''
 
-	def __init__ (self):
-		self._disks:Dict[str, Disk] = {}
+	def __init__ (self) -> None:
+		self._plot_configs:Dict[str, PlotConfiguration] = {}
 
 	@property
-	def disks (self) -> List[Disk]:
-		return [disk for disk in self._disks.values()]
+	def plot_configs (self) -> List[PlotConfiguration]:
+		return [plot_config for plot_config in self._plot_configs.values()]
 
-	def get_disk (self, comment:str) -> Disk:
-		if comment not in self._disks:
-			self._disks[comment] = Disk(comment)
+	def get_plot_config (self, name:str) -> PlotConfiguration:
+		if name not in self._plot_configs:
+			self._plot_configs[name] = PlotConfiguration(name)
 
-		return self._disks[comment]
+		return self._plot_configs[name]
 
 
-class Disk:
+class PlotConfiguration:
 	'''
-	Manage an individual disk configuration.
+	Manage an individual plot configuration. A configuration is the
+	"plotConfigurations.name" in the chia-log.yaml file. A configuration has
+	one or more "rows." A row consists of the number of threads (plots create -r
+	parameter) and values for each phase. Phases are 1-4 and the 5th phase is
+	the totals section in the log file.
 	'''
 
-	def __init__ (self, comment:str) -> None:
-		self.comment = comment
-		self.phases:Dict[int, List[float]] = {}
-		self._plot_count = 0
+	def __init__ (self, name:str) -> None:
+		self.name = name
 
-		for phase in range(1, 6):
-			self.phases[phase] = []
+		# thread count, phase 1 - 5, list of values (seconds for each phase)
+		self.rows:Dict[int, Dict[int, List[float]]] = {}
 
-	@property
-	def plot_count (self) -> int:
-		return self._plot_count
+		# number of plots with this configuration; key is threads, value is plot count
+		self._plot_count:Dict[int, int] = {}
 
-	def append (self, phase:int, value:float) -> None:
-		self.phases[phase].append(value)
+	def append (self, threads:int, phase:int, value:float) -> None:
+		if threads not in self.rows:
+			self.rows[threads] = {}
+		if phase not in self.rows[threads]:
+			self.rows[threads][phase] = []
+		self.rows[threads][phase].append(value)
 
-	def avg (self, phase:int) -> int:
-		return int(mean(self.phases[phase]))
+	def avg (self, threads:int, phase:int) -> int:
+		return int(mean(self.rows[threads][phase]))
 
-	def inc_plot_count (self) -> None:
-		self._plot_count += 1
+	def increment_plot_count (self, threads:int) -> None:
+		if threads not in self._plot_count:
+			self._plot_count[threads] = 0
+		self._plot_count[threads] += 1
+
+	def print (self) -> None:
+		print(f'Disk - {self.name}')
+		for threads in self.rows:
+			print(f'  threads {threads} count {self._plot_count[threads]:4} p1 {self.avg(threads, 1):6,} p2 {self.avg(threads, 2):6,} p3 {self.avg(threads, 3):6,} p4 {self.avg(threads, 4):6,} tot {self.avg(threads, 5):6,}')

@@ -11,7 +11,7 @@ class PlotParameters:
 	Process plot parameters at the top of the log file.
 	'''
 
-	def __init__ (self, logger:Logger):
+	def __init__ (self, logger:Logger) -> None:
 		self._logger = logger
 
 		# parameters at the top of the log file

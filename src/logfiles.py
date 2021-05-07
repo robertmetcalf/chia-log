@@ -13,11 +13,12 @@ class LogFiles:
 	Process each log file. A log file may contain more than one plot entry.
 	'''
 
-	def __init__ (self, config:Config):
+	def __init__ (self, config:Config) -> None:
 		self._config = config
 
 		self._files:List[Path] = []		# files that were processed
 		self._plots:List[Plot] = []		# a single plot in a log file
+		self._plot_ids:List[str] = []	# plot id's are used to check for duplicates
 
 	@property
 	def files (self) -> List[Path]:
@@ -30,6 +31,8 @@ class LogFiles:
 	def extract (self, log_file_path:Path) -> None:
 		'''Extract one or more plots from a log file.'''
 
+		# define the output from a single plot; a log file may contain more than
+		# one plot
 		outer_begin = r'Starting plotting progress (.+?)'
 		outer_end   = r'Renamed final file'
 		pattern = outer_begin + outer_end
@@ -47,6 +50,9 @@ class LogFiles:
 				self._config.logger.debug(f'results len {len(results)}')
 				plot = Plot(self._config)
 				if not plot.extract(results):
-					self._plots.append(plot)
+					plot_id = plot.parameters.plot_id
+					if plot_id not in self._plot_ids:
+						self._plots.append(plot)
+						self._plot_ids.append(plot_id)
 
 			self._files.append(log_file_path)

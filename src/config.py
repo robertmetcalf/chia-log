@@ -11,7 +11,7 @@ from src.logger import Logger
 
 
 class Config:
-	def __init__ (self):
+	def __init__ (self) -> None:
 		# CLI options
 		self._option_config:str  = ''			# --config file
 		self._option_file:str    = ''			# --file to process
@@ -21,8 +21,8 @@ class Config:
 		# directories section
 		self._log_directories:List[Path] = []	# a list of log directories
 
-		# disks section
-		self._disks:List[Any]= []				# various disk configurations
+		# plotConfigurations section
+		self._plot_configs:List[Any]= []	# various plot configurations
 
 		# files section
 		self._patterns:List[str] = []			# log file patterns to look for
@@ -32,12 +32,24 @@ class Config:
 		self._logger = Logger()
 
 	@property
-	def disks (self) -> List[Any]:
-		return self._disks
+	def plot_configurations (self) -> List[Any]:
+		return self._plot_configs
 
 	@property
 	def file (self) -> str:
 		return self._option_file
+
+	@property
+	def is_csv (self) -> bool:
+		return self._option_output == 'csv'
+
+	@property
+	def is_markdown (self) -> bool:
+		return self._option_output in ['markdown', 'md']
+
+	@property
+	def is_json (self) -> bool:
+		return self._option_output.lower() == 'json'
 
 	@property
 	def log_directories (self) -> List[Path]:
@@ -64,10 +76,10 @@ class Config:
 		return self._option_verbose
 
 	def cli_options ( self, option_config:str, option_file:str, option_output:str, option_verbose:int) -> None:
-		self._option_config:str  = option_config	# --config file
-		self._option_file:str    = option_file		# --file to process
-		self._option_output:str  = option_output	# --output format
-		self._option_verbose:int = option_verbose 	# --verbose logging
+		self._option_config:str  = option_config			# --config file
+		self._option_file:str    = option_file				# --file to process
+		self._option_output:str  = option_output.lower()	# --output format
+		self._option_verbose:int = option_verbose 			# --verbose logging
 
 		# validate the configuration file and command-line arguments
 		valid_con = self._validate_config()
@@ -115,12 +127,12 @@ class Config:
 			print(f'Error: in config file, no valid log directories found')
 			return False
 
-		# the "disks" section
-		if cfg and 'disks' in cfg:
-			disks:List[Any] = cfg['disks']
+		# the "plotConfigurations" section
+		if cfg and 'plotConfigurations' in cfg:
+			plot_configs:List[Any] = cfg['plotConfigurations']
 
-			if disks:
-				self._disks = disks
+			if plot_configs:
+				self._plot_configs = plot_configs
 
 		# the "files" section
 		if cfg and 'files' in cfg:

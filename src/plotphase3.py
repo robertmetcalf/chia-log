@@ -20,7 +20,7 @@ class PlotPhase3:
 	Process a plot and extract the time for phase 3.
 	'''
 
-	def __init__ (self, logger:Logger):
+	def __init__ (self, logger:Logger) -> None:
 		self._logger = logger
 
 		self.start_time:Optional[datetime] = None
