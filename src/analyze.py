@@ -28,7 +28,9 @@ class Analyze:
 			plot_config.append(plot.parameters.threads, 4, plot.phase_4.total_time)
 			plot_config.append(plot.parameters.threads, 5, plot.totals.total_time)
 
-		for plot_config in plot_configs.plot_configs:
+		for index, plot_config in enumerate(plot_configs.plot_configs):
+			if index:
+				print()
 			plot_config.print()
 
 	def print (self) -> None:

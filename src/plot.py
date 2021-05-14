@@ -66,13 +66,20 @@ class Plot:
 		Determine the plot type based on the "temp" and "dest" directory settings.
 		'''
 
-		# get the temp and dest directories for this plot
+		log_prefix = 'Plot'
+
+		# get the dest and temp directories for this plot
 		dest_dir = str(self.totals.dest_dir)
 		temp_dir_1, temp_dir_2 = self.parameters.temp_dirs	# at the top of the log file
 
 		# match the dest and temp directories to a "mount" entry in the config file
+		found:bool = False
 		for plot_config in self._config.plot_configurations:
 			if dest_dir in plot_config['dest']:
 				if temp_dir_1 in plot_config['temp'] and temp_dir_2 in plot_config['temp']:
 					self.name = plot_config['name']
+					found = True
 					break
+
+		if not found:
+			self._config.logger.error(f'{log_prefix} plot config not found, temp-1 {temp_dir_1}, temp-2 {temp_dir_2}, dest {dest_dir}')

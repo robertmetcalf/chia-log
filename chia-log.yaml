@@ -30,11 +30,24 @@ plotConfigurations:
       - /media/dest001
     temp:
       - /media/temp
-  - name: temp is dual SSDs
+  - name: temp001 is a single SSD
     sort-order: 3
+    dest:
+      - /media/dest003
+    temp:
+      - /media/temp001
+  - name: temp002 is a single SSD
+    sort-order: 4
+    dest:
+      - /media/dest003
+    temp:
+      - /media/temp002
+  - name: temp is dual SSD
+    sort-order: 5
     dest:
       - /media/dest001
       - /media/dest002
+      - /media/dest003
     temp:
       - /media/temp001
       - /media/temp002
