@@ -7,9 +7,9 @@ import argparse
 # third party packages
 
 # local packages
-from src.analyze  import Analyze
-from src.config   import Config
-from src.logfiles import LogFiles
+from src.analyze import Analyze
+from src.config  import Config
+from src.plots   import Plots
 
 
 class Main:
@@ -24,12 +24,12 @@ class Main:
 		# Process log files; a log file may contain more than one plot entry.
 		# For example, the user ran "chia plots create -n 8 > log.txt", which
 		# creates 8 plots and re-directs the output to one log file.
-		log_files = LogFiles(self._config)
+		plots = Plots(self._config)
 
 		if self._config.file:
 			# process a single file
 			file = Path(self._config.file).resolve()
-			log_files.extract(file)
+			plots.extract(file)
 
 		else:
 			# process each log file directory (in the config file)
@@ -40,17 +40,18 @@ class Main:
 					if files:
 						for file in sorted(files):
 							self._config.logger.debug(f'files - {file}')
-							log_files.extract(file)
+							plots.extract(file)
 
-		print(f'Processed {len(log_files.files)} files containing {len(log_files.plots)} plots')
+		print(f'Processed {len(plots.files)} files containing {len(plots.plots)} plots')
 
 		# post-process each plot and add more information
-		for plot in log_files.plots:
+		for plot in plots.plots:
 			plot.post_process()
 
 		# analyze the plots
 		analyze = Analyze(self._config)
-		analyze.process(log_files.plots)
+		analyze.set_config(plots.plots)
+		analyze.set_dates(plots.plots)
 		analyze.print()
 
 

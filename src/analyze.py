@@ -15,7 +15,9 @@ class Analyze:
 	def __init__ (self, config:Config) -> None:
 		self._config = config
 
-	def process (self, plots:List[Plot]) -> None:
+	def set_config (self, plots:List[Plot]) -> None:
+		'''Set the configuration for each plot.'''
+
 		plot_configs = PlotConfigurations()
 
 		for plot in plots:
@@ -32,6 +34,22 @@ class Analyze:
 			if index:
 				print()
 			plot_config.print()
+
+	def set_dates (self, plots:List[Plot]) -> None:
+		'''Set the number of plots processed per day.'''
+
+		x:Dict[str, int] = {}
+
+		for plot in plots:
+			if not plot.end_date:
+				print(f'missing end date - file {plot.log_file}, index {plot.index}')
+			else:
+				if plot.end_date not in x:
+					x[plot.end_date] = 0
+				x[plot.end_date] += 1
+
+		for date in sorted(x.keys()):
+			print(f'{date} - {x[date]}')
 
 	def print (self) -> None:
 		if self._config.is_csv:

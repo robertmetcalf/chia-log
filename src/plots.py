@@ -8,9 +8,9 @@ from src.config import Config
 from src.plot   import Plot
 
 
-class LogFiles:
+class Plots:
 	'''
-	Process each log file. A log file may contain more than one plot entry.
+	Process plots in log files. A log file may contain more than one plot entry.
 	'''
 
 	def __init__ (self, config:Config) -> None:
@@ -22,10 +22,14 @@ class LogFiles:
 
 	@property
 	def files (self) -> List[Path]:
+		'''Return a list of files processed, each element is a Path() object.'''
+
 		return self._files
 
 	@property
 	def plots (self) -> List[Plot]:
+		'''Return a list of Plot() objects.'''
+
 		return self._plots
 
 	def extract (self, log_file_path:Path) -> None:
@@ -46,9 +50,9 @@ class LogFiles:
 
 			outer = re.findall(pattern, data_replace)
 			self._config.logger.debug(f'number of  plots {len(outer)}')
-			for results in outer:
+			for index, results in enumerate(outer, 1):
 				self._config.logger.debug(f'results len {len(results)}')
-				plot = Plot(self._config)
+				plot = Plot(self._config, log_file_path, index)
 				if not plot.extract(results):
 					plot_id = plot.parameters.plot_id
 					if plot_id not in self._plot_ids:
