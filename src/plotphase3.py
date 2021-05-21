@@ -20,8 +20,9 @@ class PlotPhase3:
 	Process a plot and extract the time for phase 3.
 	'''
 
-	def __init__ (self, logger:Logger) -> None:
+	def __init__ (self, logger:Logger, index:int) -> None:
 		self._logger = logger
+		self._index  = index
 
 		self.start_time:Optional[datetime] = None
 		self.total_time:float = 0.0
@@ -29,7 +30,7 @@ class PlotPhase3:
 		self.table_time:List[Phase3] = []
 
 	def extract (self, data:str) -> bool:
-		'''Extract the time for phase 3. Return True if there was an error, otherwise False.'''
+		'''Extract the time for phase 3. Return True if the extract was good, otherwise False.'''
 
 		log_prefix = 'PlotPhase3'
 
@@ -45,17 +46,17 @@ class PlotPhase3:
 
 		outer = re.search(pattern_outer, data)
 		if not outer:
-			self._logger.error(f'{log_prefix} failed to extract outer data')
-			return True
+			self._logger.error(f'{log_prefix} index {self._index} failed to extract outer data')
+			return False
 
 		have:int = len(outer.groups())
 		need:int = 2
 		if have != need:
-			self._logger.error(f'{log_prefix} failed to match outer data, need {need} groups, have {have} groups')
-			return True
+			self._logger.error(f'{log_prefix} index {self._index} failed to match outer data, need {need} groups, have {have} groups')
+			return False
 
 		body = outer.group(1)
-		self.start_time = phase_start_time(self._logger, log_prefix, body)
+		self.start_time = phase_start_time(self._logger, log_prefix, self._index, body)
 		self.total_time = float(outer.group(2))
 
 		need = 9
@@ -63,8 +64,8 @@ class PlotPhase3:
 		for result in inner:
 			have = len(result)
 			if have != need:
-				self._logger.error(f'{log_prefix} failed to match inner data, need {need} groups, have {have} groups')
-				return True
+				self._logger.error(f'{log_prefix} index {self._index} failed to match inner data, need {need} groups, have {have} groups')
+				return False
 
 			table_1 = int(result[1])
 			table_2 = int(result[2])
@@ -74,8 +75,8 @@ class PlotPhase3:
 			ph = Phase3(table_1, table_2, first_pass, second_pass, seconds)
 			self.table_time.append(ph)
 
-			self._logger.debug(f'{log_prefix} compress tables {table_1} and {table_2} first {first_pass} second {second_pass} seconds {seconds}')
+			self._logger.debug(f'{log_prefix} index {self._index} compress tables {table_1} and {table_2} first {first_pass} second {second_pass} seconds {seconds}')
 
-		self._logger.debug(f'{log_prefix} total seconds {self.total_time}')
+		self._logger.debug(f'{log_prefix} index {self._index} total seconds {self.total_time}')
 
-		return False
+		return True

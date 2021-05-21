@@ -29,6 +29,7 @@ class Main:
 		if self._config.file:
 			# process a single file
 			file = Path(self._config.file).resolve()
+			self._config.logger.debug(f'file - {file}')
 			plots.extract(file)
 
 		else:
@@ -58,13 +59,14 @@ class Main:
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description='Process chia log files.')
 	parser.add_argument('-c', '--config', type=str, default='chia-log.yaml', help='configuration file')
+	parser.add_argument('-d', '--details', action='store_true', default=False, help='details of every plot')
 	parser.add_argument('-f', '--file', type=str, default='', help='process a specific file')
 	parser.add_argument('-o', '--output', type=str, default='csv', help='output format (csv, json, or markdown)')
 	parser.add_argument('-v', '--verbose', action='count', default=0, help='')
 	args = parser.parse_args()
 
 	config = Config()
-	config.cli_options(args.config, args.file, args.output, args.verbose)
+	config.cli_options(args.config, args.details, args.file, args.output, args.verbose)
 	if config.valid:
 		main = Main(config)
 		main.run()

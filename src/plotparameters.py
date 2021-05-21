@@ -8,11 +8,12 @@ from src.logger import Logger
 
 class PlotParameters:
 	'''
-	Process plot parameters at the top of the log file.
+	Process plot parameters at the top of each plot log.
 	'''
 
-	def __init__ (self, logger:Logger) -> None:
+	def __init__ (self, logger:Logger, index:int) -> None:
 		self._logger = logger
+		self._index  = index
 
 		# parameters at the top of the log file
 		self.temp_dir_1:str  = ''		# into temporary dirs: /media/temp001 and /media/temp002
@@ -31,7 +32,7 @@ class PlotParameters:
 	def extract (self, data:str) -> bool:
 		'''
 		Extract the parameters (plot size, buffer size, buckets, threads, and
-		stripe size). Return True if there was an error, otherwise False.
+		stripe size). Return True if the extract was good, otherwise False.
 
 		Data looks like:
 
@@ -43,7 +44,7 @@ class PlotParameters:
 		Using 4 threads of stripe size 65536
 		'''
 
-		prefix = 'PlotParameters'
+		log_prefix = 'PlotParameters'
 		line_1 = r'into temporary dirs: (.+) and (.+) '
 		line_2 = r'ID: (\w+) '
 		line_3 = r'Plot size is: (\d+) '
@@ -54,14 +55,14 @@ class PlotParameters:
 
 		results = re.search(pattern, data)
 		if not results:
-			self._logger.error(f'{prefix} failed to extract data')
-			return True
+			self._logger.error(f'{log_prefix} index {self._index} failed to extract data')
+			return False
 
 		have:int = len(results.groups())
 		need:int = 8
 		if have != need:
-			self._logger.error(f'{prefix} failed to match data, need {need} groups, have {have} groups')
-			return True
+			self._logger.error(f'{log_prefix} index {self._index} failed to match data, need {need} groups, have {have} groups')
+			return False
 
 		self.temp_dir_1  = str(results.group(1))
 		self.temp_dir_2  = str(results.group(2))
@@ -72,6 +73,6 @@ class PlotParameters:
 		self.threads     = int(results.group(7))
 		self.stripe_size = int(results.group(8))
 
-		self._logger.debug(f'{prefix} res {results.groups()}')
+		self._logger.debug(f'{log_prefix} index {self._index} res {results.groups()}')
 
-		return False
+		return True

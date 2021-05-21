@@ -48,8 +48,12 @@ class Analyze:
 					x[plot.end_date] = 0
 				x[plot.end_date] += 1
 
-		for date in sorted(x.keys()):
-			print(f'{date} - {x[date]}')
+		total:int = 0
+		for date in sorted(x):
+			count = x[date]
+			print(f'{date} - {count:4}')
+			total += count
+		print(f'Total      - {total:4}')
 
 	def print (self) -> None:
 		if self._config.is_csv:

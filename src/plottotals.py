@@ -14,8 +14,9 @@ class PlotTotals:
 	Process plot totals at the end of the file.
 	'''
 
-	def __init__ (self, logger:Logger) -> None:
+	def __init__ (self, logger:Logger, index:int) -> None:
 		self._logger = logger
+		self._index  = index
 
 		# parameters at the end of the log file
 		self.working_gb:float = 0.0		# Approximate working space used (without final file): 269.308 GiB
@@ -33,7 +34,7 @@ class PlotTotals:
 	def extract (self, data:str) -> bool:
 		'''
 		Extract the totals at the end of the file (working space, final file
-		size, total time, and copy time). Return True if there was an error,
+		size, total time, and copy time). Return True if the extract was good,
 		otherwise False.
 
 		Data looks like:
@@ -58,14 +59,14 @@ class PlotTotals:
 
 		results = re.search(pattern, data)
 		if not results:
-			self._logger.error(f'{log_prefix} failed to extract outer data')
-			return True
+			self._logger.error(f'{log_prefix} index {self._index} failed to extract outer data')
+			return False
 
 		have:int = len(results.groups())
 		need:int = 10
 		if have != need:
-			self._logger.error(f'{log_prefix} failed to match data, need {need} groups, have {have} groups')
-			return True
+			self._logger.error(f'{log_prefix} index {self._index} failed to match data, need {need} groups, have {have} groups')
+			return False
 
 		self.working_gb = float(results.group(1))
 		self.file_gb    = float(results.group(3))
@@ -73,14 +74,14 @@ class PlotTotals:
 		self.temp_path  = str(results.group(7))
 		self.dest_path  = str(results.group(8))
 		self.copy_time  = float(results.group(9))
-		self.end_time   = phase_start_time(self._logger, log_prefix, results.group(10))
+		self.end_time   = phase_start_time(self._logger, log_prefix, self._index, results.group(10))
 
-		self._logger.debug(f'{log_prefix} working GB {self.working_gb}')
-		self._logger.debug(f'{log_prefix} file GB {self.file_gb}')
-		self._logger.debug(f'{log_prefix} total seconds {self.total_time}')
-		self._logger.debug(f'{log_prefix} copy seconds {self.copy_time}')
-		self._logger.debug(f'{log_prefix} end time {self.end_time}')
-		self._logger.debug(f'{log_prefix} temp path {self.temp_path}')
-		self._logger.debug(f'{log_prefix} dest path {self.dest_path}')
+		self._logger.debug(f'{log_prefix} index {self._index} working GB {self.working_gb}')
+		self._logger.debug(f'{log_prefix} index {self._index} file GB {self.file_gb}')
+		self._logger.debug(f'{log_prefix} index {self._index} total seconds {self.total_time}')
+		self._logger.debug(f'{log_prefix} index {self._index} copy seconds {self.copy_time}')
+		self._logger.debug(f'{log_prefix} index {self._index} end time {self.end_time}')
+		self._logger.debug(f'{log_prefix} index {self._index} temp path {self.temp_path}')
+		self._logger.debug(f'{log_prefix} index {self._index} dest path {self.dest_path}')
 
-		return False
+		return True

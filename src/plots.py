@@ -50,10 +50,11 @@ class Plots:
 
 			outer = re.findall(pattern, data_replace)
 			self._config.logger.debug(f'number of  plots {len(outer)}')
-			for index, results in enumerate(outer, 1):
-				self._config.logger.debug(f'results len {len(results)}')
+			for index, result in enumerate(outer, 1):
+				self._config.logger.debug(f'results len {len(result)}')
+
 				plot = Plot(self._config, log_file_path, index)
-				if not plot.extract(results):
+				if plot.extract(result):
 					plot_id = plot.parameters.plot_id
 					if plot_id not in self._plot_ids:
 						self._plots.append(plot)

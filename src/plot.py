@@ -25,12 +25,12 @@ class Plot:
 		self.index = index
 
 		# extracted from the log file
-		self.parameters = PlotParameters(logger)
-		self.phase_1    = PlotPhase1(logger)
-		self.phase_2    = PlotPhase2(logger)
-		self.phase_3    = PlotPhase3(logger)
-		self.phase_4    = PlotPhase4(logger)
-		self.totals     = PlotTotals(logger)
+		self.parameters = PlotParameters(logger, index)
+		self.phase_1    = PlotPhase1(logger, index)
+		self.phase_2    = PlotPhase2(logger, index)
+		self.phase_3    = PlotPhase3(logger, index)
+		self.phase_4    = PlotPhase4(logger, index)
+		self.totals     = PlotTotals(logger, index)
 
 		# determined after the log file is processed
 		self.name:str = ''			# plot configurations for categorizing plot types
@@ -38,28 +38,28 @@ class Plot:
 
 	def extract (self, data:str) -> bool:
 		'''
-		Extract a plot. Return True if there was an error, otherwise False.
+		Extract a plot. Return True if the extract was good, otherwise False.
 		'''
 
-		if self.parameters.extract(data):
-			return True
+		if not self.parameters.extract(data):
+			return False
 
-		if self.phase_1.extract(data):
-			return True
+		if not self.phase_1.extract(data):
+			return False
 
-		if self.phase_2.extract(data):
-			return True
+		if not self.phase_2.extract(data):
+			return False
 
-		if self.phase_3.extract(data):
-			return True
+		if not self.phase_3.extract(data):
+			return False
 
-		if self.phase_4.extract(data):
-			return True
+		if not self.phase_4.extract(data):
+			return False
 
-		if self.totals.extract(data):
-			return True
+		if not self.totals.extract(data):
+			return False
 
-		return False
+		return True
 
 	def post_process (self) -> None:
 		'''

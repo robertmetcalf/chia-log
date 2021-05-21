@@ -13,10 +13,11 @@ from src.logger import Logger
 class Config:
 	def __init__ (self) -> None:
 		# CLI options
-		self._option_config:str  = ''			# --config file
-		self._option_file:str    = ''			# --file to process
-		self._option_output:str  = ''			# --output format
-		self._option_verbose:int = 0 			# --verbose logging
+		self._option_config:str   = ''			# --config file
+		self._option_details:bool = False		# --details
+		self._option_file:str     = ''			# --file to process
+		self._option_output:str   = ''			# --output format
+		self._option_verbose:int  = 0 			# --verbose logging
 
 		# directories section
 		self._log_directories:List[Path] = []	# a list of log directories
@@ -75,11 +76,12 @@ class Config:
 	def verbose (self) -> int:
 		return self._option_verbose
 
-	def cli_options ( self, option_config:str, option_file:str, option_output:str, option_verbose:int) -> None:
-		self._option_config:str  = option_config			# --config file
-		self._option_file:str    = option_file				# --file to process
-		self._option_output:str  = option_output.lower()	# --output format
-		self._option_verbose:int = option_verbose 			# --verbose logging
+	def cli_options ( self, option_config:str, option_details:bool, option_file:str, option_output:str, option_verbose:int) -> None:
+		self._option_config:str   = option_config			# --config file
+		self._option_details:bool = option_details			# --details
+		self._option_file:str     = option_file				# --file to process
+		self._option_output:str   = option_output.lower()	# --output format
+		self._option_verbose:int  = option_verbose 			# --verbose logging
 
 		# validate the configuration file and command-line arguments
 		valid_con = self._validate_config()
