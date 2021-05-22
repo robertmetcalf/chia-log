@@ -38,19 +38,32 @@ class Analyze:
 	def set_dates (self, plots:List[Plot]) -> None:
 		'''Set the number of plots processed per day.'''
 
-		x:Dict[str, int] = {}
+		plot_days:Dict[str, int] = {}
+		plot_months:Dict[str, int] = {}
 
 		for plot in plots:
-			if not plot.end_date:
+			if not plot.end_date_yyyy_mm_dd:
 				print(f'missing end date - file {plot.log_file}, index {plot.index}')
 			else:
-				if plot.end_date not in x:
-					x[plot.end_date] = 0
-				x[plot.end_date] += 1
+				if plot.end_date_yyyy_mm_dd not in plot_days:
+					plot_days[plot.end_date_yyyy_mm_dd] = 0
+				plot_days[plot.end_date_yyyy_mm_dd] += 1
+
+				if plot.end_date_yyyy_mm not in plot_months:
+					plot_months[plot.end_date_yyyy_mm] = 0
+				plot_months[plot.end_date_yyyy_mm] += 1
 
 		total:int = 0
-		for date in sorted(x):
-			count = x[date]
+		for date in sorted(plot_months):
+			count = plot_months[date]
+			print(f'{date}    - {count:4}')
+			total += count
+		print(f'Total      - {total:4}')
+		print()
+
+		total:int = 0
+		for date in sorted(plot_days):
+			count = plot_days[date]
 			print(f'{date} - {count:4}')
 			total += count
 		print(f'Total      - {total:4}')

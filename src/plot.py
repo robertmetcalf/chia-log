@@ -33,8 +33,9 @@ class Plot:
 		self.totals     = PlotTotals(logger, index)
 
 		# determined after the log file is processed
-		self.name:str = ''			# plot configurations for categorizing plot types
-		self.end_date:str = ''		# end date yyyy-mm-dd
+		self.name:str = ''					# plot configurations for categorizing plot types
+		self.end_date_yyyy_mm_dd:str = ''	# end date yyyy-mm-dd
+		self.end_date_yyyy_mm:str = ''		# end date yyyy-mm
 
 	def extract (self, data:str) -> bool:
 		'''
@@ -95,9 +96,10 @@ class Plot:
 	def _set_plot_date (self) -> None:
 		'''
 		Set the date this plot completed, which is used to determine the number
-		of plots per day.
+		of plots per day and month.
 		'''
 
 		et = self.totals.end_time
 		if et:
-			self.end_date = f'{et.year:04}-{et.month:02}-{et.day:02}'
+			self.end_date_yyyy_mm_dd = f'{et.year:04}-{et.month:02}-{et.day:02}'
+			self.end_date_yyyy_mm = f'{et.year:04}-{et.month:02}'
