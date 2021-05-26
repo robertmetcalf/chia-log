@@ -17,7 +17,7 @@ class Plots:
 		self._config = config
 
 		self._files:List[Path] = []		# files that were processed
-		self._plots:List[Plot] = []		# a single plot in a log file
+		self._plots:List[Plot] = []		# a single plot extracted from a log file
 		self._plot_ids:List[str] = []	# plot id's are used to check for duplicates
 
 	@property
@@ -61,3 +61,10 @@ class Plots:
 						self._plot_ids.append(plot_id)
 
 			self._files.append(log_file_path)
+
+	def post_process (self) -> None:
+		'''Post-process each plot and add more information.'''
+
+		for plot in self._plots:
+			plot.set_plot_type()
+			plot.set_plot_date()

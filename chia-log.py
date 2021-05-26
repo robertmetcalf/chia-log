@@ -46,8 +46,7 @@ class Main:
 		print(f'Processed {len(plots.files)} files containing {len(plots.plots)} plots')
 
 		# post-process each plot and add more information
-		for plot in plots.plots:
-			plot.post_process()
+		plots.post_process()
 
 		# analyze the plots
 		analyze = Analyze(self._config)

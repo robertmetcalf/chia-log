@@ -62,15 +62,7 @@ class Plot:
 
 		return True
 
-	def post_process (self) -> None:
-		'''
-		Post-process each plot and add more information.
-		'''
-
-		self._set_plot_type()
-		self._set_plot_date()
-
-	def _set_plot_type (self) -> None:
+	def set_plot_type (self) -> None:
 		'''
 		Determine the plot type based on the "temp" and "dest" directory settings.
 		'''
@@ -93,7 +85,7 @@ class Plot:
 		if not found:
 			self._config.logger.error(f'{log_prefix} plot config not found, temp-1 {temp_dir_1}, temp-2 {temp_dir_2}, dest {dest_dir}')
 
-	def _set_plot_date (self) -> None:
+	def set_plot_date (self) -> None:
 		'''
 		Set the date this plot completed, which is used to determine the number
 		of plots per day and month.

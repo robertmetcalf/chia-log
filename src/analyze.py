@@ -38,6 +38,7 @@ class Analyze:
 	def set_dates (self, plots:List[Plot]) -> None:
 		'''Set the number of plots processed per day.'''
 
+		# create plot totals per day and month
 		plot_days:Dict[str, int] = {}
 		plot_months:Dict[str, int] = {}
 
@@ -53,6 +54,7 @@ class Analyze:
 					plot_months[plot.end_date_yyyy_mm] = 0
 				plot_months[plot.end_date_yyyy_mm] += 1
 
+		# plot totasl per month
 		total:int = 0
 		for date in sorted(plot_months):
 			count = plot_months[date]
@@ -61,6 +63,7 @@ class Analyze:
 		print(f'Total      - {total:4}')
 		print()
 
+		# plot totals per day
 		total:int = 0
 		for date in sorted(plot_days):
 			count = plot_days[date]
