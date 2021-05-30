@@ -21,9 +21,12 @@ class Main:
 		self._config = config
 
 	def run (self) -> None:
-		# Process log files; a log file may contain more than one plot entry.
-		# For example, the user ran "chia plots create -n 8 > log.txt", which
-		# creates 8 plots and re-directs the output to one log file.
+		'''
+		Process log files; a log file may contain more than one plot entry.
+		For example, the user ran "chia plots create -n 8 > log.txt", which
+		creates 8 plots and re-directs the output to one log file.
+		'''
+
 		plots = Plots(self._config)
 
 		if self._config.file:
@@ -35,7 +38,7 @@ class Main:
 		else:
 			# process each log file directory (in the config file)
 			for log_directory in self._config.log_directories:
-				# look for log files that match a pattern (*.log, etc.)
+				# process log files that match a pattern (*.log, etc.)
 				for pattern in self._config.patterns:
 					files = log_directory.glob(f'**/{pattern}')
 					if files:
@@ -50,8 +53,7 @@ class Main:
 
 		# analyze the plots
 		analyze = Analyze(self._config)
-		analyze.set_config(plots.plots)
-		analyze.set_dates(plots.plots)
+		analyze.process(plots)
 		analyze.print()
 
 

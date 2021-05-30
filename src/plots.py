@@ -66,5 +66,5 @@ class Plots:
 		'''Post-process each plot and add more information.'''
 
 		for plot in self._plots:
-			plot.set_plot_type()
+			plot.set_plot_configuration()
 			plot.set_plot_date()

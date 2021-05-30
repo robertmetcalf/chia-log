@@ -62,9 +62,10 @@ class Plot:
 
 		return True
 
-	def set_plot_type (self) -> None:
+	def set_plot_configuration (self) -> None:
 		'''
-		Determine the plot type based on the "temp" and "dest" directory settings.
+		Determine the plot configuration based on the "temp" and "dest"
+		directory settings.
 		'''
 
 		log_prefix = 'Plot'
@@ -88,7 +89,7 @@ class Plot:
 	def set_plot_date (self) -> None:
 		'''
 		Set the date this plot completed, which is used to determine the number
-		of plots per day and month.
+		of plots per day and month. Use the end date in the "totals" section.
 		'''
 
 		et = self.totals.end_time

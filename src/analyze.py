@@ -5,7 +5,7 @@ from typing     import Dict, List
 
 # local packages
 from src.config import Config
-from src.plot   import Plot
+from src.plots  import Plots
 
 class Analyze:
 	'''
@@ -15,12 +15,19 @@ class Analyze:
 	def __init__ (self, config:Config) -> None:
 		self._config = config
 
-	def set_config (self, plots:List[Plot]) -> None:
-		'''Set the configuration for each plot.'''
+	def process (self, plots:Plots) -> None:
+		self._set_config(plots)
+		self._set_dates(plots)
+
+	def _set_config (self, plots:Plots) -> None:
+		'''
+		Append each plot to a PlotConfiguration() object. This groups similar
+		plots together for analyzing.
+		'''
 
 		plot_configs = PlotConfigurations()
 
-		for plot in plots:
+		for plot in plots.plots:
 			# get the disk configuration that matches this plot
 			plot_config = plot_configs.get_plot_config(plot.name)
 			plot_config.increment_plot_count(plot.parameters.threads)
@@ -35,14 +42,14 @@ class Analyze:
 				print()
 			plot_config.print()
 
-	def set_dates (self, plots:List[Plot]) -> None:
-		'''Set the number of plots processed per day.'''
+	def _set_dates (self, plots:Plots) -> None:
+		'''Determine the number of plots processed per day.'''
 
 		# create plot totals per day and month
 		plot_days:Dict[str, int] = {}
 		plot_months:Dict[str, int] = {}
 
-		for plot in plots:
+		for plot in plots.plots:
 			if not plot.end_date_yyyy_mm_dd:
 				print(f'missing end date - file {plot.log_file}, index {plot.index}')
 			else:
@@ -72,6 +79,9 @@ class Analyze:
 		print(f'Total      - {total:4}')
 
 	def print (self) -> None:
+		self._print_configs();
+		self._print_dates();
+
 		if self._config.is_csv:
 			pass
 
@@ -80,6 +90,11 @@ class Analyze:
 
 		if self._config.is_markdown:
 			pass
+	def _print_configs (self) -> None:
+		pass
+
+	def _print_dates (self) -> None:
+		pass
 
 class PlotConfigurations:
 	'''
@@ -94,6 +109,11 @@ class PlotConfigurations:
 		return [plot_config for plot_config in self._plot_configs.values()]
 
 	def get_plot_config (self, name:str) -> PlotConfiguration:
+		'''
+		Return an existing PlotConfiguration() or create a new one based on the
+		config name, which was created in plot.set_plot_configuration().
+		'''
+
 		if name not in self._plot_configs:
 			self._plot_configs[name] = PlotConfiguration(name)
 
@@ -112,7 +132,8 @@ class PlotConfiguration:
 	def __init__ (self, name:str) -> None:
 		self.name = name
 
-		# thread count, phase 1 - 5, list of values (seconds for each phase)
+		# key is thread count, value is a dictionary of phases (1 - 5) and a
+		# list of values (seconds) for each phase
 		self.rows:Dict[int, Dict[int, List[float]]] = {}
 
 		# number of plots with this configuration; key is threads, value is plot count
