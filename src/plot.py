@@ -33,7 +33,7 @@ class Plot:
 		self.totals     = PlotTotals(logger, index)
 
 		# determined after the log file is processed
-		self.name:str = ''					# plot configurations for categorizing plot types
+		self.name:str = ''					# plot name configurations for categorizing plot types
 		self.end_date_yyyy_mm_dd:str = ''	# end date yyyy-mm-dd
 		self.end_date_yyyy_mm:str = ''		# end date yyyy-mm
 

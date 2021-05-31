@@ -15,21 +15,27 @@ class Analyze:
 	def __init__ (self, config:Config) -> None:
 		self._config = config
 
+		self._plot_configs = PlotConfigurations()
+
+		# key is yyyy-mm-dd, value is number of plots
+		self._plots_per_day:Dict[str, int] = {}
+
+		# key is yyyy-mm, value is number of plots
+		self._plots_per_month:Dict[str, int] = {}
+
 	def process (self, plots:Plots) -> None:
-		self._set_config(plots)
-		self._set_dates(plots)
+		self._set_config(plots)		# group similar plots for analysis
+		self._set_dates(plots)		# plot totals per day and month
 
 	def _set_config (self, plots:Plots) -> None:
 		'''
 		Append each plot to a PlotConfiguration() object. This groups similar
-		plots together for analyzing.
+		plots together for analysis.
 		'''
-
-		plot_configs = PlotConfigurations()
 
 		for plot in plots.plots:
 			# get the disk configuration that matches this plot
-			plot_config = plot_configs.get_plot_config(plot.name)
+			plot_config = self._plot_configs.get_plot_config(plot.name)
 			plot_config.increment_plot_count(plot.parameters.threads)
 			plot_config.append(plot.parameters.threads, 1, plot.phase_1.total_time)
 			plot_config.append(plot.parameters.threads, 2, plot.phase_2.total_time)
@@ -37,49 +43,24 @@ class Analyze:
 			plot_config.append(plot.parameters.threads, 4, plot.phase_4.total_time)
 			plot_config.append(plot.parameters.threads, 5, plot.totals.total_time)
 
-		for index, plot_config in enumerate(plot_configs.plot_configs):
-			if index:
-				print()
-			plot_config.print()
-
 	def _set_dates (self, plots:Plots) -> None:
 		'''Determine the number of plots processed per day.'''
-
-		# create plot totals per day and month
-		plot_days:Dict[str, int] = {}
-		plot_months:Dict[str, int] = {}
 
 		for plot in plots.plots:
 			if not plot.end_date_yyyy_mm_dd:
 				print(f'missing end date - file {plot.log_file}, index {plot.index}')
 			else:
-				if plot.end_date_yyyy_mm_dd not in plot_days:
-					plot_days[plot.end_date_yyyy_mm_dd] = 0
-				plot_days[plot.end_date_yyyy_mm_dd] += 1
+				if plot.end_date_yyyy_mm_dd not in self._plots_per_day:
+					self._plots_per_day[plot.end_date_yyyy_mm_dd] = 0
+				self._plots_per_day[plot.end_date_yyyy_mm_dd] += 1
 
-				if plot.end_date_yyyy_mm not in plot_months:
-					plot_months[plot.end_date_yyyy_mm] = 0
-				plot_months[plot.end_date_yyyy_mm] += 1
-
-		# plot totasl per month
-		total:int = 0
-		for date in sorted(plot_months):
-			count = plot_months[date]
-			print(f'{date}    - {count:4}')
-			total += count
-		print(f'Total      - {total:4}')
-		print()
-
-		# plot totals per day
-		total:int = 0
-		for date in sorted(plot_days):
-			count = plot_days[date]
-			print(f'{date} - {count:4}')
-			total += count
-		print(f'Total      - {total:4}')
+				if plot.end_date_yyyy_mm not in self._plots_per_month:
+					self._plots_per_month[plot.end_date_yyyy_mm] = 0
+				self._plots_per_month[plot.end_date_yyyy_mm] += 1
 
 	def print (self) -> None:
 		self._print_configs();
+		print()
 		self._print_dates();
 
 		if self._config.is_csv:
@@ -90,11 +71,31 @@ class Analyze:
 
 		if self._config.is_markdown:
 			pass
+
 	def _print_configs (self) -> None:
-		pass
+		for index, plot_config in enumerate(self._plot_configs.plot_configs):
+			if index:
+				print()
+			plot_config.print()
 
 	def _print_dates (self) -> None:
-		pass
+		# plot totals per month
+		total:int = 0
+		for date in sorted(self._plots_per_month):
+			count = self._plots_per_month[date]
+			print(f'{date}    - {count:4}')
+			total += count
+		print(f'Total      - {total:4}')
+		print()
+
+		# plot totals per day
+		total:int = 0
+		for date in sorted(self._plots_per_day):
+			count = self._plots_per_day[date]
+			print(f'{date} - {count:4}')
+			total += count
+		print(f'Total      - {total:4}')
+
 
 class PlotConfigurations:
 	'''
@@ -102,6 +103,7 @@ class PlotConfigurations:
 	'''
 
 	def __init__ (self) -> None:
+		# key is name such as "temp is a single SSD", value is a PlotConfiguration()
 		self._plot_configs:Dict[str, PlotConfiguration] = {}
 
 	@property
@@ -111,14 +113,14 @@ class PlotConfigurations:
 	def get_plot_config (self, name:str) -> PlotConfiguration:
 		'''
 		Return an existing PlotConfiguration() or create a new one based on the
-		config name, which was created in plot.set_plot_configuration().
+		config name, which was created in plot.set_plot_configuration(). The
+		names are found in chia-log.yaml and example is "temp is a single SSD".
 		'''
 
 		if name not in self._plot_configs:
 			self._plot_configs[name] = PlotConfiguration(name)
 
 		return self._plot_configs[name]
-
 
 class PlotConfiguration:
 	'''
@@ -134,20 +136,20 @@ class PlotConfiguration:
 
 		# key is thread count, value is a dictionary of phases (1 - 5) and a
 		# list of values (seconds) for each phase
-		self.rows:Dict[int, Dict[int, List[float]]] = {}
+		self._rows:Dict[int, Dict[int, List[float]]] = {}
 
 		# number of plots with this configuration; key is threads, value is plot count
 		self._plot_count:Dict[int, int] = {}
 
 	def append (self, threads:int, phase:int, value:float) -> None:
-		if threads not in self.rows:
-			self.rows[threads] = {}
-		if phase not in self.rows[threads]:
-			self.rows[threads][phase] = []
-		self.rows[threads][phase].append(value)
+		if threads not in self._rows:
+			self._rows[threads] = {}
+		if phase not in self._rows[threads]:
+			self._rows[threads][phase] = []
+		self._rows[threads][phase].append(value)
 
 	def avg (self, threads:int, phase:int) -> int:
-		return int(mean(self.rows[threads][phase]))
+		return int(mean(self._rows[threads][phase]))
 
 	def increment_plot_count (self, threads:int) -> None:
 		if threads not in self._plot_count:
@@ -156,5 +158,17 @@ class PlotConfiguration:
 
 	def print (self) -> None:
 		print(f'Disk - {self.name}')
-		for threads in self.rows:
-			print(f'  threads {threads} count {self._plot_count[threads]:4} p1 {self.avg(threads, 1):6,} p2 {self.avg(threads, 2):6,} p3 {self.avg(threads, 3):6,} p4 {self.avg(threads, 4):6,} tot {self.avg(threads, 5):6,}')
+		for threads in sorted(self._rows.keys()):
+			print(f'  threads {threads} plots {self._plot_count[threads]:4} p1 {self.avg(threads, 1):6,} p2 {self.avg(threads, 2):6,} p3 {self.avg(threads, 3):6,} p4 {self.avg(threads, 4):6,} tot {self.avg(threads, 5):6,}')
+
+	def sort_by_threads (self) -> Dict[int, Dict[int, List[float]]]:
+		'''
+		Return self._rows sorted by the key, which is the number of threads.
+		'''
+
+		new_rows:Dict[int, Dict[int, List[float]]] = {}
+
+		for thread_count in sorted(self._rows.keys()):
+			new_rows[thread_count] = self._rows[thread_count]
+
+		return new_rows
