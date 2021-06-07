@@ -54,7 +54,7 @@ class Main:
 		# analyze the plots
 		analyze = Analyze(self._config)
 		analyze.process(plots)
-		analyze.print()
+		analyze.print(plots)
 
 
 if __name__ == '__main__':

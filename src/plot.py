@@ -1,4 +1,6 @@
 # system packages
+from datetime import datetime, timedelta
+from typing   import Dict, Optional
 from pathlib import Path
 
 # local packages
@@ -33,6 +35,11 @@ class Plot:
 		self.totals     = PlotTotals(logger, index)
 
 		# determined after the log file is processed
+		self.start_time:Optional[datetime]    = None
+		self.end_time:Optional[datetime]      = None
+		self.elapsed_time:Optional[timedelta] = None
+		self.overlap:Dict[str, timedelta]     = {}
+
 		self.name:str = ''					# plot name configurations for categorizing plot types
 		self.end_date_yyyy_mm_dd:str = ''	# end date yyyy-mm-dd
 		self.end_date_yyyy_mm:str = ''		# end date yyyy-mm
@@ -96,3 +103,17 @@ class Plot:
 		if et:
 			self.end_date_yyyy_mm_dd = f'{et.year:04}-{et.month:02}-{et.day:02}'
 			self.end_date_yyyy_mm = f'{et.year:04}-{et.month:02}'
+
+	def set_plot_time (self) -> None:
+		'''
+		Set the start time, end time, and elapsed time.
+		'''
+
+		if self.phase_1.start_time and self.totals.end_time:
+			self.start_time   = self.phase_1.start_time
+			self.end_time     = self.totals.end_time
+			self.elapsed_time = self.end_time - self.start_time
+
+	def set_plot_overlap (self, plot_id:str, overlap:timedelta) -> None:
+		if plot_id not in self.overlap:
+			self.overlap[plot_id] = overlap

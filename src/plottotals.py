@@ -24,7 +24,7 @@ class PlotTotals:
 		self.total_time:float = 0.0		# Total time = 13508.459 seconds. CPU (133.870%) Sun Apr 25 20:44:18 2021
 		self.temp_path:str    = ''		# Copied final file from "/temp2/name.plot.2.tmp" to "/dest/name.plot.2.tmp"
 		self.dest_path:str    = ''		# Copied final file from "/temp2/name.plot.2.tmp" to "/dest/name.plot.2.tmp"
-		self.copy_time:float  = 0.0		# Copy time = 371.657 seconds. CPU (21.260%) Sun Apr 25 20:50:30 2021
+		self.copy_secs:float  = 0.0		# Copy time = 371.657 seconds. CPU (21.260%) Sun Apr 25 20:50:30 2021
 		self.end_time:Optional[datetime] = None
 
 	@property
@@ -73,13 +73,13 @@ class PlotTotals:
 		self.total_time = float(results.group(5))
 		self.temp_path  = str(results.group(7))
 		self.dest_path  = str(results.group(8))
-		self.copy_time  = float(results.group(9))
+		self.copy_secs  = float(results.group(9))
 		self.end_time   = phase_start_time(self._logger, log_prefix, self._index, results.group(10))
 
 		self._logger.debug(f'{log_prefix} index {self._index} working GB {self.working_gb}')
 		self._logger.debug(f'{log_prefix} index {self._index} file GB {self.file_gb}')
 		self._logger.debug(f'{log_prefix} index {self._index} total seconds {self.total_time}')
-		self._logger.debug(f'{log_prefix} index {self._index} copy seconds {self.copy_time}')
+		self._logger.debug(f'{log_prefix} index {self._index} copy seconds {self.copy_secs}')
 		self._logger.debug(f'{log_prefix} index {self._index} end time {self.end_time}')
 		self._logger.debug(f'{log_prefix} index {self._index} temp path {self.temp_path}')
 		self._logger.debug(f'{log_prefix} index {self._index} dest path {self.dest_path}')

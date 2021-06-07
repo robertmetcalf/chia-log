@@ -1,11 +1,15 @@
 # system packages
-from __future__ import annotations
-from statistics import mean
-from typing     import Dict, List
+from __future__  import annotations
+from datetime    import datetime
+from statistics  import mean
+from typing      import Dict, List, NamedTuple, Optional
 
 # local packages
 from src.config import Config
 from src.plots  import Plots
+class Range (NamedTuple):
+	start:datetime
+	end:datetime
 
 class Analyze:
 	'''
@@ -23,9 +27,26 @@ class Analyze:
 		# key is yyyy-mm, value is number of plots
 		self._plots_per_month:Dict[str, int] = {}
 
+	def print (self, plots:Plots) -> None:
+		self._print_configs();
+		print()
+		self._print_dates();
+		print()
+		self._print_overlap(plots);
+
+		if self._config.is_csv:
+			pass
+
+		if self._config.is_json:
+			pass
+
+		if self._config.is_markdown:
+			pass
+
 	def process (self, plots:Plots) -> None:
 		self._set_config(plots)		# group similar plots for analysis
 		self._set_dates(plots)		# plot totals per day and month
+		self._set_overlap(plots)	# number of overlaps for each plot
 
 	def _set_config (self, plots:Plots) -> None:
 		'''
@@ -58,19 +79,46 @@ class Analyze:
 					self._plots_per_month[plot.end_date_yyyy_mm] = 0
 				self._plots_per_month[plot.end_date_yyyy_mm] += 1
 
-	def print (self) -> None:
-		self._print_configs();
-		print()
-		self._print_dates();
+	def _set_overlap (self, plots:Plots) -> None:
+		'''Set the number of overlaps for each plot.'''
 
-		if self._config.is_csv:
-			pass
+		range_source:Optional[Range] = None
+		range_dest:Optional[Range]   = None
 
-		if self._config.is_json:
-			pass
+		for source in plots.plots:
+			range_source = None
+			range_dest   = None
 
-		if self._config.is_markdown:
-			pass
+			if source.phase_1.start_time and source.totals.end_time:
+				range_source = Range(start=source.phase_1.start_time, end=source.totals.end_time)
+				print(f'source start {range_source.start} end {range_source.end}')
+
+			for dest in plots.plots:
+				# don't compare a plot to itself
+				if source.parameters.plot_id == dest.parameters.plot_id:
+					continue
+
+				if dest.phase_1.start_time and dest.totals.end_time:
+					range_dest = Range(start=dest.phase_1.start_time, end=dest.totals.end_time)
+
+				if range_source and range_dest:
+					# the source ended before the destinaton started
+					# src...src
+					#           dest...dest
+					if range_source.end < range_dest.start:
+						continue
+					# the destination ended before the source started
+					#             src...src
+					# dest...dest
+					if range_dest.end < range_source.start:
+						continue
+
+					latest_start = max(range_source.start, range_dest.start)
+					earliest_end = min(range_source.end, range_dest.end)
+					#delta = (earliest_end - latest_start).seconds + 1
+					delta = earliest_end - latest_start
+					#overlap = max(0, delta)
+					source.set_plot_overlap(source.parameters.plot_id, delta)
 
 	def _print_configs (self) -> None:
 		for index, plot_config in enumerate(self._plot_configs.plot_configs):
@@ -79,6 +127,8 @@ class Analyze:
 			plot_config.print()
 
 	def _print_dates (self) -> None:
+		'''Print plots per month and plots per day.'''
+
 		# plot totals per month
 		total:int = 0
 		for date in sorted(self._plots_per_month):
@@ -95,6 +145,11 @@ class Analyze:
 			print(f'{date} - {count:4}')
 			total += count
 		print(f'Total      - {total:4}')
+
+	def _print_overlap (self, plots:Plots) -> None:
+		for plot in plots.plots:
+			for plot_id, overlap in plot.overlap.items():
+				print(f'plot id {plot_id}, elapsed {plot.elapsed_time} overlap {overlap}')
 
 
 class PlotConfigurations:
